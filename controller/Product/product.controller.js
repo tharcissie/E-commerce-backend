@@ -1,67 +1,72 @@
-const productDao = require('../Product/product.dao');
-var productController = {
-    addProduct: addProduct,
-    findProducts: findProducts,
-    findProductById: findProductById,
-    updateProduct: updateProduct,
-    deleteById: deleteById
-}
+const models = require("../../database/models");
+const { product } = models;
 
-function addProduct(req, res) {
-    let product = req.body;
-    productDao.create(product).
-        then((data) => {
-            res.send(data);
-        })
-        .catch((error) => {
-            console.log(error);
-        });
-}
+exports.addProduct = (req, res) => {
+  let productInfo = req.body;
+  product
+    .create(productInfo)
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
 
-function findProductById(req, res) {
-    productDao.findById(req.params.id).
-        then((data) => {
-            res.send(data);
-        })
-        .catch((error) => {
-            console.log(error);
-        });
-}
+exports.findProductById = (req, res) => {
+    product
+      .findByPk(req.params.id)
+      .then((data) => {
+        res.send(data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
-function deleteById(req, res) {
-    productDao.deleteById(req.params.id).
-        then((data) => {
-            res.status(200).json({
-                message: "Product deleted successfully",
-                Product: data
-            })
-        })
-        .catch((error) => {
-            console.log(error);
-        });
-}
+exports.deleteById = (req, res) => {
+  product
+    .destroy({
+      where: {
+        id: req.params.id,
+      },
+    })
+    .then((data) => {
+      res.status(200).json({
+        message: "Product deleted successfully",
+        Product: data,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
 
-function updateProduct(req, res) {
-    productDao.updateProduct(req.body, req.params.id).
-        then((data) => {
-            res.status(200).json({
-                message: "Product updated successfully",
-                Product: data
-            })
-        })
-        .catch((error) => {
-            console.log(error);
-        });
-}
+exports.updateProduct = (req, res) => {
+  product
+    .update(req.body, {
+      where: {
+        id: req.params.id,
+      },
+    })
+    .then((data) => {
+      res.status(200).json({
+        message: "Product updated successfully",
+        Product: data,
+      });
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
 
-function findProducts(req, res) {
-    productDao.findAll().
-        then((data) => {
-            res.send(data);
-        })
-        .catch((error) => {
-            console.log(error);
-        });
-}
-
-module.exports = productController;
+exports.findProducts = (req, res) => {
+  product
+    .findAll()
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};

@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const port = 3000;
 //const db = require('./queries')
 const cors = require('cors');
-const db = require('./config/database');
+const db = require('./database/config/database');
 db.authenticate().then(() => {
     console.log('Database connected...');
 }).catch(err => {
