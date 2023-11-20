@@ -4,33 +4,39 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { Op } = require("sequelize");
+const verifySignUp = require("../../middleware/verifySignUp");
 
 exports.signup = (req, res) => {
-  user
-    .create({
-      username: req.body.username,
-      email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, 8),
-    })
-    .then((user) => {
-      if (user) {
-        let token = jwt.sign({ id: user.id }, process.env.secretKey, {
-          expiresIn: 1 * 24 * 60 * 60 * 1000,
-        });
+  verifySignUp.checkDuplicateUsernameOrEmail(req, res, () => {
+    user
+      .create({
+        username: req.body.username,
+        email: req.body.email,
+        password: bcrypt.hashSync(req.body.password, 8),
+      })
+      .then((user) => {
+        if (user) {
+          let token = jwt.sign({ id: user.id }, process.env.secretKey, {
+            expiresIn: 1 * 24 * 60 * 60 * 1000,
+          });
 
-        // Set cookie with the token generated
-        res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
-        console.log("user", JSON.stringify(user, null, 2));
-        console.log(token);
-        // Send user's details
-        return res.status(201).send(user);
-      } else {
-        return res.status(409).send("Details are not correct");
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
+          // Set cookie with the token generated
+          res.cookie("jwt", token, {
+            maxAge: 1 * 24 * 60 * 60,
+            httpOnly: true,
+          });
+          console.log("user", JSON.stringify(user, null, 2));
+          console.log(token);
+          // Send user's details
+          return res.status(201).send(user);
+        } else {
+          return res.status(409).send("Details are not correct");
+        }
+      })
+      .catch((err) => {
+        res.status(500).send({ message: err.message });
+      });
+  });
 };
 
 exports.signin = (req, res) => {

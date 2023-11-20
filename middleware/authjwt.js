@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const config = require("../config/auth.config");
+require("dotenv").config();
 
 verifyToken = (req, res, next) => {
   let token = req.headers["x-access-token"];
@@ -10,7 +10,7 @@ verifyToken = (req, res, next) => {
     });
   }
 
-  jwt.verify(token, config.secret, (err, decoded) => {
+  jwt.verify(token, process.env.secretKey, (err, decoded) => {
     if (err) {
       return res.status(401).send({
         message: "Unauthorized!",
@@ -20,25 +20,7 @@ verifyToken = (req, res, next) => {
     next();
   });
 };
-
-// isAdmin = (req, res, next) => {
-//   User.findByPk(req.userId).then(user => {
-//     user.getRoles().then(roles => {
-//       for (let i = 0; i < roles.length; i++) {
-//         if (roles[i].name === "admin") {
-//           next();
-//           return;
-//         }
-//       }
-//       res.status(403).send({
-//         message: "Require Admin Role!"
-//       });
-//       return;
-//     });
-//   });
-// };
 const authJwt = {
   verifyToken: verifyToken,
-  //isAdmin: isAdmin
 };
 module.exports = authJwt;

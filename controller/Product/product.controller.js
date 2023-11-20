@@ -1,10 +1,38 @@
 const models = require("../../models");
 const { product } = models;
+const cloudinary = require("cloudinary").v2;
 
-exports.addProduct = (req, res) => {
-  let productInfo = req.body;
+cloudinary.config({
+  cloud_name: process.env.YOUR_CLOUD_NAME,
+  api_key: process.env.YOUR_CLOUD_API_KEY,
+  api_secret: process.env.YOUR_CLOUD_API_SECRET
+});
+
+exports.addProduct =  async (req, res) => {
+  try {
+    let productInfo = req.body;
+    const imageFile = req.file.path; 
+
+    if (!imageFile) {
+      return res.status(400).send("No image file found");
+    }
+
+    const uploadedImage = await cloudinary.uploader.upload(imageFile);
+    const imageUrl = uploadedImage.secure_url;
+
+    productInfo.image = imageUrl;
+
+    const createdProduct = await product.create(productInfo);
+    res.status(201).json(createdProduct);
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res.status(500).send("Error adding product.");
+  }
+};
+
+exports.findProductById = (req, res) => {
   product
-    .create(productInfo)
+    .findByPk(req.params.id)
     .then((data) => {
       res.send(data);
     })
@@ -12,17 +40,6 @@ exports.addProduct = (req, res) => {
       console.log(error);
     });
 };
-
-exports.findProductById = (req, res) => {
-    product
-      .findByPk(req.params.id)
-      .then((data) => {
-        res.send(data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
 exports.deleteById = (req, res) => {
   product
