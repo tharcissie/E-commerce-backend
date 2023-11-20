@@ -1,33 +1,36 @@
 const models = require("../../models");
 const { product } = models;
 const cloudinary = require("cloudinary").v2;
+const authJwt = require("../../middleware/authjwt");
 
 cloudinary.config({
   cloud_name: process.env.YOUR_CLOUD_NAME,
   api_key: process.env.YOUR_CLOUD_API_KEY,
-  api_secret: process.env.YOUR_CLOUD_API_SECRET
+  api_secret: process.env.YOUR_CLOUD_API_SECRET,
 });
 
-exports.addProduct =  async (req, res) => {
-  try {
-    let productInfo = req.body;
-    const imageFile = req.file.path; 
+exports.addProduct = async (req, res) => {
+  authJwt.verifyToken(req, res, async () => {
+    try {
+      let productInfo = req.body;
+      const imageFile = req.file.path;
 
-    if (!imageFile) {
-      return res.status(400).send("No image file found");
+      if (!imageFile) {
+        return res.status(400).send("No image file found");
+      }
+
+      const uploadedImage = await cloudinary.uploader.upload(imageFile);
+      const imageUrl = uploadedImage.secure_url;
+
+      productInfo.image = imageUrl;
+
+      const createdProduct = await product.create(productInfo);
+      res.status(201).json(createdProduct);
+    } catch (error) {
+      console.error("Error adding product:", error);
+      res.status(500).send("Error adding product.");
     }
-
-    const uploadedImage = await cloudinary.uploader.upload(imageFile);
-    const imageUrl = uploadedImage.secure_url;
-
-    productInfo.image = imageUrl;
-
-    const createdProduct = await product.create(productInfo);
-    res.status(201).json(createdProduct);
-  } catch (error) {
-    console.error("Error adding product:", error);
-    res.status(500).send("Error adding product.");
-  }
+  });
 };
 
 exports.findProductById = (req, res) => {
@@ -42,39 +45,43 @@ exports.findProductById = (req, res) => {
 };
 
 exports.deleteById = (req, res) => {
-  product
-    .destroy({
-      where: {
-        id: req.params.id,
-      },
-    })
-    .then((data) => {
-      res.status(200).json({
-        message: "Product deleted successfully",
-        Product: data,
+  authJwt.verifyToken(req, res, async () => {
+    product
+      .destroy({
+        where: {
+          id: req.params.id,
+        },
+      })
+      .then((data) => {
+        res.status(200).json({
+          message: "Product deleted successfully",
+          Product: data,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
       });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  });
 };
 
 exports.updateProduct = (req, res) => {
-  product
-    .update(req.body, {
-      where: {
-        id: req.params.id,
-      },
-    })
-    .then((data) => {
-      res.status(200).json({
-        message: "Product updated successfully",
-        Product: data,
+  authJwt.verifyToken(req, res, async () => {
+    product
+      .update(req.body, {
+        where: {
+          id: req.params.id,
+        },
+      })
+      .then((data) => {
+        res.status(200).json({
+          message: "Product updated successfully",
+          Product: data,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
       });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  });
 };
 
 exports.findProducts = (req, res) => {
