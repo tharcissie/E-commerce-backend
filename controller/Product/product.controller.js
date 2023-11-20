@@ -1,4 +1,4 @@
-const models = require("../../database/models");
+const models = require("../../models");
 const { product } = models;
 
 exports.addProduct = (req, res) => {

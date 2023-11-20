@@ -1,9 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const port = 3000;
-//const db = require('./queries')
+const port = 4000;
 const cors = require('cors');
-const db = require('./database/config/database');
+const db = require('./config/database');
+const cookieParser = require('cookie-parser')
 db.authenticate().then(() => {
     console.log('Database connected...');
 }).catch(err => {
@@ -18,6 +18,7 @@ app.use(
     extended: true,
   })
 );
+app.use(cookieParser())
 app.use(cors("*"));
 
 app.use('/', require('./routes/routes'));

@@ -1,8 +1,9 @@
-const models = require("../../database/models");
+const models = require("../../models");
 const { user } = models;
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const config = require("../../database/config/auth.config");
+require("dotenv").config();
+const { Op } = require("sequelize");
 
 exports.signup = (req, res) => {
   user
@@ -11,8 +12,21 @@ exports.signup = (req, res) => {
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 8),
     })
-    .then(() => {
-      res.send({ message: "User registered successfully!" });
+    .then((user) => {
+      if (user) {
+        let token = jwt.sign({ id: user.id }, process.env.secretKey, {
+          expiresIn: 1 * 24 * 60 * 60 * 1000,
+        });
+
+        // Set cookie with the token generated
+        res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
+        console.log("user", JSON.stringify(user, null, 2));
+        console.log(token);
+        // Send user's details
+        return res.status(201).send(user);
+      } else {
+        return res.status(409).send("Details are not correct");
+      }
     })
     .catch((err) => {
       res.status(500).send({ message: err.message });
@@ -20,21 +34,35 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res) => {
+  const { email, username, password } = req.body;
+
+  if ((!email && !username) || !password) {
+    return res
+      .status(400)
+      .send({ message: "Email/Username and password are required." });
+  }
+
+  let whereCondition = {};
+
+  if (email) {
+    whereCondition.email = email;
+  }
+
+  if (username) {
+    whereCondition.username = username;
+  }
+
   user
     .findOne({
       where: {
-        username: req.body.username,
+        [Op.or]: [whereCondition],
       },
     })
     .then((user) => {
       if (!user) {
         return res.status(404).send({ message: "User Not found." });
       }
-
-      var passwordIsValid = bcrypt.compareSync(
-        req.body.password,
-        user.password
-      );
+      var passwordIsValid = bcrypt.compareSync(password, user.password);
 
       if (!passwordIsValid) {
         return res.status(401).send({
@@ -43,9 +71,16 @@ exports.signin = (req, res) => {
         });
       }
 
-      var token = jwt.sign({ id: user.user_id }, config.secret, {
+      var token = jwt.sign({ id: user.id }, process.env.secretKey, {
         expiresIn: 86400, // 24 hours
       });
+
+      //if password matches wit the one in the database
+      //go ahead and generate a cookie for the user
+      res.cookie("jwt", token, { maxAge: 1 * 24 * 60 * 60, httpOnly: true });
+      console.log("user", JSON.stringify(user, null, 2));
+      console.log(token);
+      //send user data
 
       res.status(200).send({
         id: user.user_id,
