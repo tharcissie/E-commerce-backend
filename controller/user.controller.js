@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { Op } = require("sequelize");
 const verifySignUp = require("../middleware/verifySignUp");
+const HTML_TEMPLATE = require("../utils/mail-template");
+const SENDMAIL = require("../utils/mailer");
+require("dotenv").config();
 
 exports.signup = (req, res) => {
   verifySignUp.checkDuplicateUsernameOrEmail(req, res, () => {
@@ -16,6 +19,18 @@ exports.signup = (req, res) => {
       })
       .then((user) => {
         if (user) {
+          const message = `Hi ${user.username}, Welcome to our E-commerce`;
+          const options = {
+            from: process.env.MAILER_EMAIL,
+            to: user.email,
+            subject: "Welcome Email",
+            text: message,
+            html: HTML_TEMPLATE(message),
+          };
+          SENDMAIL(options, (info) => {
+            console.log("Email sent successfully");
+            console.log("MESSAGE ID: ", info.messageId);
+          });
           let token = jwt.sign({ id: user.id }, process.env.secretKey, {
             expiresIn: 1 * 24 * 60 * 60 * 1000,
           });
