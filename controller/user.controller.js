@@ -1,10 +1,10 @@
-const models = require("../../models");
+const models = require("../models");
 const { user } = models;
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { Op } = require("sequelize");
-const verifySignUp = require("../../middleware/verifySignUp");
+const verifySignUp = require("../middleware/verifySignUp");
 
 exports.signup = (req, res) => {
   verifySignUp.checkDuplicateUsernameOrEmail(req, res, () => {

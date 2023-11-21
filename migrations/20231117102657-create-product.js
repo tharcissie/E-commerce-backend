@@ -12,9 +12,6 @@ module.exports = {
       name: {
         type: Sequelize.STRING,
       },
-      category: {
-        type: Sequelize.STRING,
-      },
       description: {
         type: Sequelize.STRING,
       },
@@ -29,6 +26,16 @@ module.exports = {
         allowNull: false,
         references: {
           model: "users",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+      category: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: "categories",
           key: "id",
         },
         onUpdate: "CASCADE",

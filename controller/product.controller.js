@@ -1,13 +1,7 @@
-const models = require("../../models");
+const models = require("../models");
 const { product } = models;
-const cloudinary = require("cloudinary").v2;
-const authJwt = require("../../middleware/authjwt");
-
-cloudinary.config({
-  cloud_name: process.env.YOUR_CLOUD_NAME,
-  api_key: process.env.YOUR_CLOUD_API_KEY,
-  api_secret: process.env.YOUR_CLOUD_API_SECRET,
-});
+const cloudinary = require("../utils/cloudinaryConfig");
+const authJwt = require("../middleware/authjwt");
 
 exports.addProduct = async (req, res) => {
   authJwt.verifyToken(req, res, async () => {

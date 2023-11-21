@@ -6,11 +6,11 @@ module.exports = (sequelize, DataTypes) => {
   class product extends Model {
     static associate(models) {
       product.belongsTo(models.user, { foreignKey: 'userId' });
+      product.belongsTo(models.category, { foreignKey: 'category', as: 'productCategory', });
     }
   }
   product.init({
     name: DataTypes.STRING,
-    category: DataTypes.STRING,
     description: DataTypes.STRING,
     image:DataTypes.STRING,
     price: DataTypes.FLOAT
