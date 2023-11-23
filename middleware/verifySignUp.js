@@ -33,7 +33,5 @@ checkDuplicateUsernameOrEmail = (req, res, next) => {
       next();
     });
 };
-const verifySignUp = {
-  checkDuplicateUsernameOrEmail: checkDuplicateUsernameOrEmail,
-};
-module.exports = verifySignUp;
+
+module.exports = checkDuplicateUsernameOrEmail;

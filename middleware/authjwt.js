@@ -10,7 +10,7 @@ verifyToken = (req, res, next) => {
     });
   }
   token = token.slice(7);
-  jwt.verify(token, process.env.secretKey, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
       return res.status(401).send({
         message: "Unauthorized!",
@@ -20,7 +20,5 @@ verifyToken = (req, res, next) => {
     next();
   });
 };
-const authJwt = {
-  verifyToken: verifyToken,
-};
-module.exports = authJwt;
+
+module.exports = verifyToken;

@@ -1,19 +1,16 @@
 const express = require("express");
 const router = express.Router();
-
 const {
-    addCategory,
-    findCategories,
-    findCategoryById,
-    updateCategory,
-    deleteCategoryById,
-  } = require("../controller/category.controller");
-  const upload = require("../utils/multerConfig");
-  
-  router.post("/",addCategory);
-  router.get("/", findCategories);
-  router.get("/:id", findCategoryById);
-  router.put("/:id", updateCategory);
-  router.delete("/:id", deleteCategoryById);
-  
-  module.exports = router;
+  addCategory,
+  findCategories,
+  updateCategory,
+  deleteCategoryById,
+} = require("../controller/category.controller");
+const verifyToken = require("../middleware/authjwt")
+
+router.post("/", verifyToken, addCategory);
+router.get("/", findCategories);
+router.put("/:id", verifyToken, updateCategory);
+router.delete("/:id", verifyToken, deleteCategoryById);
+
+module.exports = router;

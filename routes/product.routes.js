@@ -8,11 +8,12 @@ const {
   deleteById,
 } = require("../controller/product.controller");
 const upload = require("../utils/multerConfig");
+const verifyToken = require("../middleware/authjwt");
 
-router.post("/", upload.single("image"), addProduct);
+router.post("/", verifyToken, upload.single("image"), addProduct);
 router.get("/", findProducts);
 router.get("/:id", findProductById);
-router.put("/:id", updateProduct);
-router.delete("/:id", deleteById);
+router.put("/:id", verifyToken, updateProduct);
+router.delete("/:id", verifyToken, deleteById);
 
 module.exports = router;
